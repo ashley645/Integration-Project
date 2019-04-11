@@ -1,15 +1,19 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 // Ashley Schoenradt
 // Intergration Project
 // Coffee ordering machine that takes orders, saves orders, and creates new drink menu options.
 
-public class Main {
+public class CoffeeShop {
 
+	public static ArrayList<Order> Orders = new ArrayList<Order>();
+	//public static Order[] Orders = new Order[100];
 	public static MenuItem[] Drinks = new MenuItem[100];
-	public static Order[] Orders = new Order[100];
 	public static Scanner scanner;
-	public static boolean Run = true;
+	public static boolean Run[][] = new boolean[1][1];
+
+	
 
 	// booleans binary variables that have two possible values, usually true or
 	// false.
@@ -22,12 +26,22 @@ public class Main {
 		 */
 		createOriginalDrinks();
 		scanner = new Scanner(System.in);
+		
+		Run[0][0] = true;
 
-		while (Run) {
+		while (Run[0][0]) {
 			printMainMenu();
-			int i = scanner.nextInt();
-			scanner.nextLine();
-			mainMenuInput(i);
+			try {
+				int i = scanner.nextInt();
+				scanner.nextLine();
+				mainMenuInput(i);
+			}catch(java.util.InputMismatchException e) {
+				println("Hey you entered something bad. Please try again");
+				scanner.nextLine();
+			}catch(Exception e) {
+				println(e.getMessage());
+				scanner.nextLine();
+			}
 		}
 		System.out.println("Goodbye!");
 		System.exit(0);
@@ -35,21 +49,34 @@ public class Main {
 	}
 
 	public static void createOriginalDrinks() {
-		MenuItem m = new MenuItem();
-		m.DrinkName = "Coffee";
-		m.Price = 2.31;
+		MenuItem m = new MenuItem("Coffee", 3.31);
 		Drinks[3] = m;
 
-		MenuItem n = new MenuItem();
-		n.DrinkName = "Latte";
-		n.Price = 3.15;
+		MenuItem n = new MenuItem("Latte", 3.15);
 		Drinks[1] = n;
-
-		MenuItem o = new MenuItem();
-		o.DrinkName = "Iced Coffee";
-		o.Price = 3.15;
+		
+		MenuItem o = new MenuItem("Iced Coffee", 3.15);
 		Drinks[2] = o;
 	}
+	
+	//overload method
+	public static void createOriginalDrinks(Boolean expensive) {
+		
+		if(expensive) {
+			MenuItem m = new MenuItem("Coffee", 20.31);
+			Drinks[3] = m;
+
+			MenuItem n = new MenuItem("Latte", 30.15);
+			Drinks[1] = n;
+
+			MenuItem o = new MenuItem("Iced Coffee", 30.15);
+			Drinks[2] = o;
+		}else {
+			createOriginalDrinks();
+		}
+	}
+	
+	
 
 	// This is my coffee menu function of original drinks. I used classes and
 	// strings to create theses
@@ -59,7 +86,8 @@ public class Main {
 		System.out.println("\t1.Order a drink.");
 		System.out.println("\t2.Create a drink.");
 		System.out.println("\t3.View Orders.");
-		System.out.println("\t4.Close.\n\n");
+		System.out.println("\t4.View Cheapest Drink.");
+		System.out.println("\t5.Close.\n\n");
 
 	}
 
@@ -79,6 +107,10 @@ public class Main {
 			displayAllOrders();
 			break;
 		case 4:
+			MenuItem m = getCheapestDrink();
+			println("Cheapest drink: "+m.getDrinkName()+" $"+m.getPrice()+"");
+			break;
+		case 5:
 			quit();
 			break;
 		default:
@@ -133,8 +165,20 @@ public class Main {
 	// This string prints out "please provide the name of drink" and expects user to
 	// return a string
 	public static String askName() {
-		System.out.println("Please provide a name for the order.");
-		return scanner.nextLine();
+			
+		try {
+			System.out.println("Please provide a name for the order.");
+			return scanner.nextLine();
+
+		}catch(java.util.InputMismatchException e) {
+			println("Hey you entered something bad. Please try again");
+			scanner.nextLine();
+			return askName();
+		}catch(Exception e) {
+			println(e.getMessage());
+			scanner.nextLine();
+			return askName();
+		}	
 	}
 
 	// This string prints out "please provide the name of the drink" and expects
@@ -154,8 +198,8 @@ public class Main {
 		Order o = new Order();
 		MenuItem m = getDrink(i);
 		o.Name = name;
-		o.Drink = m.DrinkName;
-		o.Price = m.Price;
+		o.Drink = m.getDrinkName();
+		o.Price = m.getPrice();
 		createOrder(o);
 		displayAllOrders();
 	}
@@ -165,8 +209,8 @@ public class Main {
 	// the order with the info given from the user.
 	public static void createMenuItem(String DrinkName, Double price) {
 		MenuItem m = new MenuItem();
-		m.DrinkName = DrinkName;
-		m.Price = price;
+		m.setDrinkName (DrinkName);
+		m.setPrice (price);
 		if (checkForDuplicate(DrinkName)) {
 			System.out.println("You can't! That drink name is already taken! \n");
 		} else {
@@ -179,7 +223,7 @@ public class Main {
 	public static Boolean checkForDuplicate(String s) {
 
 		for (int i = 1; i < Drinks.length - 1; i++) {
-			if (Drinks[i] != null && (Drinks[i].DrinkName.compareTo(s) == 0 || Drinks[i].DrinkName.equals(s))) {
+			if (Drinks[i] != null && (Drinks[i].getDrinkName().compareTo(s) == 0 || Drinks[i].getDrinkName().equals(s))) {
 				// == compares object references, it checks to see if the two operands point to
 				// the same object
 				return true;
@@ -197,15 +241,42 @@ public class Main {
 	// price, then
 	// creates them into the coffee menu.
 	public static int getNumber() {
-		int i = scanner.nextInt();
-		scanner.nextLine();
-		return i;
+
+		try {
+			int i = scanner.nextInt();
+			scanner.nextLine();
+			return i;
+
+		}catch(java.util.InputMismatchException e) {
+			println("Hey you entered something bad. Please try again");
+			scanner.nextLine();
+			return getNumber();
+		}catch(Exception e) {
+			println(e.getMessage());
+			scanner.nextLine();
+			return getNumber();
+		}	
 	}
 
 	public static double getDouble() {
-		double i = scanner.nextDouble();
-		scanner.nextLine();
-		return i;
+		
+		
+		try {
+			double i = scanner.nextDouble();
+			scanner.nextLine();
+			return i;
+
+		}catch(java.util.InputMismatchException e) {
+			println("Hey you entered something bad. Please try again");
+			scanner.nextLine();
+			return getDouble();
+		}catch(Exception e) {
+			println(e.getMessage());
+			scanner.nextLine();
+			return getDouble();
+		}
+		
+
 	}
 
 	public static MenuItem getDrink(int x) {
@@ -229,7 +300,7 @@ public class Main {
 		System.out.println("\n");
 		for (int i = 1; i < Drinks.length - 1; i++) {
 			if (Drinks[i] != null) {
-				System.out.println(i + ". " + Drinks[i].DrinkName + "\t$" + Drinks[i].Price);
+				System.out.println(i + ". " + Drinks[i].getDrinkName() + "\t$" + Drinks[i].getPrice());
 
 			}
 		}
@@ -240,23 +311,21 @@ public class Main {
 
 	// this just prints a new line.
 	public static void displayAllOrders() {
-		for (int i = 1; i < Orders.length - 1; i++) {
-			if (Orders[i] != null) {
-				System.out.println(i + ". Name: " + Orders[i].Name + "\t Price: $" + Orders[i].Price + "\tDrink: "
-						+ Orders[i].Drink);
-
-			}
+		int i = 1;
+		
+		for(Order o : Orders) {
+			
+			System.out.println(i + ". Name: " + o.Name + "\t Price: $" + o.Price + "\tDrink: "
+					+ o.Drink);
+			i++;
 		}
+		
+		
 	}
 
 	// this displays all orders and prints the name, price, and drink of the order.
 	public static void createOrder(Order o) {
-		for (int i = 1; i < Orders.length - 1; i++) {
-			if (Orders[i] == null) {
-				Orders[i] = o;
-				break;
-			}
-		}
+		Orders.add(o);
 	}
 
 	// Orders is an array. Adds order to empty spot and then stops looping and saves
@@ -274,17 +343,47 @@ public class Main {
 	// Drinks is an array. Adds drink to empty spot and then stops looping and saves
 	// the new drink to
 	// the menu. For loop is looping through the array.
+	
+	
+	public static MenuItem getCheapestDrink() {
+		MenuItem cheapo = null;
+		for (int i = 1; i < Drinks.length - 1; i++) {
+			if ((Drinks[i] != null && cheapo == null) || (cheapo != null && Drinks[i] != null && Drinks[i].getPrice() < cheapo.getPrice())) {
+				cheapo = Drinks[i];
+			}
+		}
+		return cheapo;
+	}
+	//This loops through the array and finds the lowest value in the array
+	
+	public static double getTotalPriceOfAllMenuItems() {
+		double accumulator = 0;
+		
+		for (MenuItem drink : Drinks) {
+			if (drink != null) {
+				accumulator += drink.getPrice();
+			}
+		}
+		return accumulator;
+	}
+	
+	
+	
+	
+	
 	public static void quit() {
-		Run = false;
+		Run[0][0] = false;
 
 		if (getMenuItemCount() % 2 == 1) {
 			do {
 				println("Theres an odd number of items on the menu. ");
-			} while (Run);
+			} while (Run[0][0]);
 
 		} else {
 			println("Theres an even number of items on the menu. ");
 		}
+		
+		System.out.println("Also, the total cost of the items on the drink menu is: $"+getTotalPriceOfAllMenuItems());
 
 	}
 	// boolean that ends program.
